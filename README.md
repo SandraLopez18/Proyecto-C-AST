@@ -54,7 +54,7 @@ Colecciones:
 Clonar el repositorio:
 
 ```
-git clone https://github.com/TU_USUARIO/Proyecto-C-AST.git
+git clone https://github.com/SandraLopez18/Proyecto-C-AST.git
 ```
 
 Instalar dependencias en cada microservicio:
