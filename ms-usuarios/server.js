@@ -16,6 +16,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride());
+app.use(cors());
 
 // Archivos estáticos (Angular)
 app.use(express.static(path.join(__dirname, 'frontend')));

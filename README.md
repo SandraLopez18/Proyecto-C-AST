@@ -133,3 +133,78 @@ Body:
 **DELETE** `/api/usuarios/:id`
 
 ✔ Usuario eliminado correctamente
+
+
+## 🐞 Problema encontrado: error de acceso al consultar rol
+
+Durante la implementación de la comunicación entre microservicios, se detectó el siguiente problema:
+
+Al introducir un `userId` válido en el microservicio de camisetas, el sistema mostraba el mensaje:
+
+```
+Usuario no válido o error al consultar el rol.
+```
+
+Sin embargo:
+
+* El usuario existía en la base de datos
+* El endpoint `/api/usuarios/:id/rol` funcionaba correctamente en Postman
+
+---
+
+## 🔍 Causa del problema
+
+El error estaba relacionado con **CORS (Cross-Origin Resource Sharing)**.
+
+El frontend de `ms-camisetas` (puerto 3002) intentaba acceder a `ms-usuarios` (puerto 3001):
+
+```
+http://localhost:3002 → http://localhost:3001
+```
+
+El navegador bloqueaba la petición por seguridad al tratarse de distintos orígenes (diferente puerto), aunque funcionaba correctamente en Postman.
+
+---
+
+## 🛠️ Solución aplicada
+
+Se habilitó CORS en el microservicio `ms-usuarios`.
+
+### 1. Instalación de dependencia
+
+```bash
+npm install cors
+```
+
+### 2. Configuración en `server.js`
+
+```js
+const cors = require('cors');
+
+app.use(cors());
+```
+
+---
+
+## ✅ Resultado
+
+Tras aplicar la solución:
+
+* El frontend puede comunicarse correctamente con `ms-usuarios`
+* Se valida correctamente el rol del usuario
+* El acceso al microservicio de camisetas funciona según permisos:
+
+  * `admin` → acceso permitido
+  * `client` → acceso denegado (403)
+
+---
+
+## 🧠 Conclusión
+
+Este problema permitió comprobar la importancia de:
+
+* La configuración de CORS en arquitecturas con múltiples microservicios
+* La diferencia entre pruebas en Postman y en navegador
+* La comunicación real entre servicios en entornos distribuidos
+
+---
