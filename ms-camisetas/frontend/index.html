@@ -31,252 +31,248 @@ href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
 
   <div class="jumbotron text-center">
     <h1>Gestión de Camisetas</h1>
-    <h3 ng-if="autorizado">Total: {{ camisetas.length }}</h3>
+    <h3>Total: {{ camisetas.length }}</h3>
   </div>
 
-  <!-- ACCESO -->
-  <div class="panel panel-default" ng-if="!autorizado">
-    <div class="panel-heading">
-      <h3 class="panel-title">Acceso al microservicio</h3>
+  <!-- IDENTIFICACIÓN -->
+  <div class="row" style="margin-bottom:20px">
+    <div class="col-sm-4">
+      <input type="text"
+             class="form-control"
+             placeholder="Identifícate"
+             ng-model="acceso.userId">
     </div>
 
-    <div class="panel-body">
-      <p>Introduce tu ID de usuario para acceder.</p>
+    <div class="col-sm-2">
+      <button class="btn btn-primary btn-block"
+              ng-click="validarAcceso()">
+        Validar ID
+      </button>
+    </div>
 
-      <div class="row">
-        <div class="col-sm-8">
-          <input type="text"
-                 class="form-control"
-                 placeholder="Introduce tu ID de usuario"
-                 ng-model="acceso.userId">
-        </div>
+    <div class="col-sm-2">
+      <button class="btn btn-default btn-block"
+              ng-click="cerrarSesion()">
+        Cambiar ID
+      </button>
+    </div>
 
-        <div class="col-sm-4">
-          <button class="btn btn-primary btn-block"
-                  ng-click="validarAcceso()">
-            Acceder
-          </button>
-        </div>
-      </div>
-
-      <br>
-
-      <div class="alert alert-danger" ng-if="errorAcceso">
-        {{errorAcceso}}
-      </div>
-
-      <div class="alert alert-success" ng-if="mensajeAcceso">
-        {{mensajeAcceso}}
-      </div>
+    <div class="col-sm-4">
+      <p class="form-control-static" ng-if="acceso.userId">
+        <strong>ID actual:</strong> {{ acceso.userId }}
+      </p>
     </div>
   </div>
 
-  <!-- CONTENIDO SOLO SI ES ADMIN -->
-  <div ng-if="autorizado">
+  <div class="alert alert-danger" ng-if="errorAcceso">
+    {{errorAcceso}}
+  </div>
 
-    <div class="row" style="margin-bottom:20px;">
-      <div class="col-sm-8">
-        <p><strong>ID usuario:</strong> {{acceso.userId}}</p>
+  <div class="alert alert-success" ng-if="mensajeAcceso">
+    {{mensajeAcceso}}
+  </div>
+
+  <div class="alert alert-success" ng-if="mensaje">
+    {{mensaje}}
+  </div>
+
+  <div class="alert alert-danger" ng-if="error">
+    {{error}}
+  </div>
+
+  <!-- BUSCADOR -->
+  <div class="row" style="margin-bottom:20px">
+
+    <div class="col-sm-3">
+      <input type="text"
+             class="form-control"
+             placeholder="Buscar por ID"
+             ng-model="busqueda.id"
+             ng-disabled="!autorizado">
+    </div>
+
+    <div class="col-sm-3">
+      <input type="text"
+             class="form-control"
+             placeholder="Buscar por nombre"
+             ng-model="busqueda.nombre"
+             ng-disabled="!autorizado">
+    </div>
+
+    <div class="col-sm-2">
+      <select class="form-control"
+              ng-model="busqueda.color"
+              ng-disabled="!autorizado">
+        <option value="">Buscar por color</option>
+        <option>NEGRO</option>
+        <option>BLANCO</option>
+        <option>ROJO</option>
+        <option>AZUL</option>
+        <option>VERDE</option>
+      </select>
+    </div>
+
+    <div class="col-sm-2">
+      <button class="btn btn-primary btn-block"
+              ng-click="buscarCamisetas()"
+              ng-disabled="!autorizado">
+        Buscar
+      </button>
+    </div>
+
+    <div class="col-sm-2">
+      <button class="btn btn-default btn-block"
+              ng-click="mostrarTodas()"
+              ng-disabled="!autorizado">
+        Mostrar todas
+      </button>
+    </div>
+
+  </div>
+
+  <div class="row">
+
+    <!-- TABLA -->
+    <div class="col-sm-7">
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+
+          <tr class="info">
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Modelo</th>
+            <th>Color</th>
+            <th>Material</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Disponible</th>
+          </tr>
+
+          <tr ng-repeat="c in camisetas"
+              ng-click="autorizado && selectCamiseta(c)"
+              ng-class="{'selected-row': c._id === selectedId}"
+              style="cursor:pointer">
+
+            <td>{{c._id}}</td>
+            <td>{{c.nombre}}</td>
+            <td>{{c.modelo}}</td>
+            <td>{{c.color}}</td>
+            <td>{{c.material}}</td>
+            <td>{{c.cantidad}}</td>
+            <td>{{c.precio}} €</td>
+            <td>{{c.disponible}}</td>
+
+          </tr>
+
+        </table>
       </div>
-
-      <div class="col-sm-4">
-        <button class="btn btn-default btn-block"
-                ng-click="cerrarSesion()">
-          Cambiar usuario
-        </button>
-      </div>
     </div>
 
-    <div class="alert alert-success" ng-if="mensaje">
-      {{mensaje}}
-    </div>
+    <!-- FORMULARIO -->
+    <div class="col-sm-5">
 
-    <div class="alert alert-danger" ng-if="error">
-      {{error}}
-    </div>
+      <form name="myForm" ng-submit="$event.preventDefault()">
 
-    <!-- BUSCADOR -->
-    <div class="row" style="margin-bottom:20px">
-
-      <div class="col-sm-3">
         <input type="text"
                class="form-control"
-               placeholder="Buscar por ID"
-               ng-model="busqueda.id">
-      </div>
+               placeholder="Nombre"
+               ng-model="newCamiseta.nombre"
+               ng-disabled="!autorizado"
+               required>
+        <br>
 
-      <div class="col-sm-3">
-        <input type="text"
-               class="form-control"
-               placeholder="Buscar por nombre"
-               ng-model="busqueda.nombre">
-      </div>
+        <select class="form-control"
+                ng-model="newCamiseta.modelo"
+                ng-disabled="!autorizado"
+                required>
+          <option value="">Modelo</option>
+          <option>BASICA</option>
+          <option>OVERSIZE</option>
+          <option>POLO</option>
+        </select>
+        <br>
 
-      <div class="col-sm-2">
-        <select class="form-control" ng-model="busqueda.color">
-          <option value="">Buscar por color</option>
+        <select class="form-control"
+                ng-model="newCamiseta.color"
+                ng-disabled="!autorizado"
+                required>
+          <option value="">Color</option>
           <option>NEGRO</option>
           <option>BLANCO</option>
           <option>ROJO</option>
           <option>AZUL</option>
           <option>VERDE</option>
         </select>
-      </div>
+        <br>
 
-      <div class="col-sm-2">
-        <button class="btn btn-primary btn-block"
-                ng-click="buscarCamisetas()">
-          Buscar
+        <select class="form-control"
+                ng-model="newCamiseta.material"
+                ng-disabled="!autorizado"
+                required>
+          <option value="">Material</option>
+          <option>ALGODON</option>
+          <option>POLIESTER</option>
+          <option>SEDA</option>
+        </select>
+        <br>
+
+        <input type="number"
+               class="form-control"
+               placeholder="Cantidad"
+               ng-model="newCamiseta.cantidad"
+               ng-disabled="!autorizado"
+               min="0"
+               required>
+        <br>
+
+        <input type="number"
+               class="form-control"
+               placeholder="Precio"
+               ng-model="newCamiseta.precio"
+               ng-disabled="!autorizado"
+               min="0"
+               step="0.01"
+               required>
+        <br>
+
+        <select class="form-control"
+                ng-model="newCamiseta.disponible"
+                ng-disabled="!autorizado"
+                required>
+          <option value="">Disponible</option>
+          <option>SI</option>
+          <option>NO</option>
+        </select>
+        <br>
+
+        <button type="button"
+                class="btn btn-success"
+                ng-click="registrarCamiseta()"
+                ng-disabled="!autorizado || myForm.$invalid || selected">
+          Crear
         </button>
-      </div>
 
-      <div class="col-sm-2">
-        <button class="btn btn-default btn-block"
-                ng-click="mostrarTodas()">
-          Mostrar todas
+        <button type="button"
+                class="btn btn-warning"
+                ng-click="modificarCamiseta(newCamiseta)"
+                ng-disabled="!autorizado || myForm.$invalid || !selected">
+          Modificar
         </button>
-      </div>
 
-    </div>
+        <button type="button"
+                class="btn btn-danger"
+                ng-click="borrarCamiseta(newCamiseta)"
+                ng-disabled="!autorizado || !selected">
+          Eliminar
+        </button>
 
-    <div class="row">
+        <button type="button"
+                class="btn btn-default"
+                ng-click="limpiarFormulario()">
+          Limpiar
+        </button>
 
-      <!-- TABLA -->
-      <div class="col-sm-7">
-        <div class="table-responsive">
-          <table class="table table-striped table-bordered">
-
-            <tr class="info">
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Modelo</th>
-              <th>Color</th>
-              <th>Material</th>
-              <th>Cantidad</th>
-              <th>Precio</th>
-              <th>Disponible</th>
-            </tr>
-
-            <tr ng-repeat="c in camisetas"
-                ng-click="selectCamiseta(c)"
-                ng-class="{'selected-row': c._id === selectedId}"
-                style="cursor:pointer">
-
-              <td>{{c._id}}</td>
-              <td>{{c.nombre}}</td>
-              <td>{{c.modelo}}</td>
-              <td>{{c.color}}</td>
-              <td>{{c.material}}</td>
-              <td>{{c.cantidad}}</td>
-              <td>{{c.precio}} €</td>
-              <td>{{c.disponible}}</td>
-
-            </tr>
-
-          </table>
-        </div>
-      </div>
-
-      <!-- FORMULARIO -->
-      <div class="col-sm-5">
-
-        <form name="myForm" ng-submit="$event.preventDefault()">
-
-          <input type="text"
-                 class="form-control"
-                 placeholder="Nombre"
-                 ng-model="newCamiseta.nombre"
-                 required>
-          <br>
-
-          <select class="form-control"
-                  ng-model="newCamiseta.modelo"
-                  required>
-            <option value="">Modelo</option>
-            <option>BASICA</option>
-            <option>OVERSIZE</option>
-            <option>POLO</option>
-          </select>
-          <br>
-
-          <select class="form-control"
-                  ng-model="newCamiseta.color"
-                  required>
-            <option value="">Color</option>
-            <option>NEGRO</option>
-            <option>BLANCO</option>
-            <option>ROJO</option>
-            <option>AZUL</option>
-            <option>VERDE</option>
-          </select>
-          <br>
-
-          <select class="form-control"
-                  ng-model="newCamiseta.material"
-                  required>
-            <option value="">Material</option>
-            <option>ALGODON</option>
-            <option>POLIESTER</option>
-            <option>SEDA</option>
-          </select>
-          <br>
-
-          <input type="number"
-                 class="form-control"
-                 placeholder="Cantidad"
-                 ng-model="newCamiseta.cantidad"
-                 min="0"
-                 required>
-          <br>
-
-          <input type="number"
-                 class="form-control"
-                 placeholder="Precio"
-                 ng-model="newCamiseta.precio"
-                 min="0"
-                 step="0.01"
-                 required>
-          <br>
-
-          <select class="form-control"
-                  ng-model="newCamiseta.disponible"
-                  required>
-            <option value="">Disponible</option>
-            <option>SI</option>
-            <option>NO</option>
-          </select>
-          <br>
-
-          <button type="button"
-                  class="btn btn-success"
-                  ng-click="registrarCamiseta()"
-                  ng-disabled="myForm.$invalid || selected">
-            Crear
-          </button>
-
-          <button type="button"
-                  class="btn btn-warning"
-                  ng-click="modificarCamiseta(newCamiseta)"
-                  ng-disabled="myForm.$invalid || !selected">
-            Modificar
-          </button>
-
-          <button type="button"
-                  class="btn btn-danger"
-                  ng-click="borrarCamiseta(newCamiseta)"
-                  ng-disabled="!selected">
-            Eliminar
-          </button>
-
-          <button type="button"
-                  class="btn btn-default"
-                  ng-click="limpiarFormulario()">
-            Limpiar
-          </button>
-
-        </form>
-
-      </div>
+      </form>
 
     </div>
 
