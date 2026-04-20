@@ -35,6 +35,11 @@ const CompraSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0
+    },
+    fechaEnvio: {
+      type: Date,
+      default: null
+      //required: true
     }
   },
   {

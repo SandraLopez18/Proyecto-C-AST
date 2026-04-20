@@ -29,21 +29,24 @@ function buildFiltroArticulos(query) {
 
 function buildFiltroCompras(query, userId) {
   const filtro = {
-    clienteId: userId
+    //clienteId: userId
+    clienteId: new mongoose.Types.ObjectId(userId)
   };
 
   if (query.id) {
     if (!mongoose.Types.ObjectId.isValid(query.id)) {
       throw new Error('ID_COMPRA_INVALIDO');
     }
-    filtro._id = query.id;
+    //filtro._id = query.id;
+    filtro._id = new mongoose.Types.ObjectId(query.id);
   }
 
   if (query.articuloId) {
     if (!mongoose.Types.ObjectId.isValid(query.articuloId)) {
       throw new Error('ID_ARTICULO_INVALIDO');
     }
-    filtro.articuloId = query.articuloId;
+    //filtro.articuloId = query.articuloId;
+    filtro.articuloId = new mongoose.Types.ObjectId(query.articuloId);
   }
 
   if (query.nombreComprador) {
@@ -132,9 +135,26 @@ exports.getCompras = async function(req, res) {
   try {
     const filtro = buildFiltroCompras(req.query, req.userId);
 
-    const compras = await Compra.find(filtro)
-      .populate('articuloId')
-      .sort({ createdAt: -1 });
+    const compras = await Compra.aggregate([
+      { $match: filtro },
+      {
+        $lookup: {
+          from: 'camisetas',
+          localField: 'articuloId',
+          foreignField: '_id',
+          as: 'articulo'
+        }
+      },
+      { 
+        $unwind: {
+          path:  '$articulo',
+          preserveNullAndEmptyArrays: true
+       }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ]);
 
     return res.status(200).json(compras);
   } catch (error) {
@@ -152,7 +172,7 @@ exports.updateCompra = async function(req, res) {
   try {
     const compraId = req.params.id;
     const clienteId = req.userId;
-    const { nombreComprador, direccionEnvio } = req.body;
+    const { nombreComprador, direccionEnvio, fechaEnvio } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(compraId)) {
       return res.status(400).json({ error: 'ID de compra inválido.' });
@@ -162,12 +182,24 @@ exports.updateCompra = async function(req, res) {
       return res.status(400).json({ error: 'Nombre y dirección son obligatorios.' });
     }
 
+    const datosActualizar = {
+      nombreComprador: nombreComprador,
+      direccionEnvio: direccionEnvio
+    };
+
+    if (fechaEnvio) {
+      const fecha = new Date(fechaEnvio);
+
+      if (isNaN(fecha.getTime())) {
+        return res.status(400).json({ error: 'Fecha de envío inválida.' });
+      }
+
+      datosActualizar.fechaEnvio = fecha;
+    }
+
     const compraActualizada = await Compra.findOneAndUpdate(
       { _id: compraId, clienteId: clienteId },
-      {
-        nombreComprador: nombreComprador,
-        direccionEnvio: direccionEnvio
-      },
+      datosActualizar,
       { new: true }
     ).populate('articuloId');
 

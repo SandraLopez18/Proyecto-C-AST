@@ -36,6 +36,8 @@ mongoose.connect('mongodb://localhost:27017/tiendaBD')
 require('./app/routes.js')(app);
 
 // Servidor
+/**
 app.listen(port, () => {
   console.log(`Servidor ejecutándose en http://localhost:${port}`);
 });
+**/

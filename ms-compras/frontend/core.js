@@ -32,6 +32,7 @@ angular.module('ComprasApp', [])
       id: '',
       nombreComprador: '',
       direccionEnvio: ''
+      // fechaEnvio: ''
     };
 
     $scope.articulos = [];
@@ -56,6 +57,15 @@ angular.module('ComprasApp', [])
       return { userId: getUserId() };
     }
 
+    /*
+    function formatearFechaInput(fecha) {
+      if (!fecha) return '';
+      const d = new Date(fecha);
+      if (isNaN(d.getTime())) return '';
+      return d.toISOString().split('T')[0];
+    }
+    */
+
     function reiniciarDatosPantalla() {
       $scope.articulos = [];
       $scope.compras = [];
@@ -78,6 +88,7 @@ angular.module('ComprasApp', [])
         id: '',
         nombreComprador: '',
         direccionEnvio: ''
+        // fechaEnvio: ''
       };
     }
 
@@ -225,6 +236,7 @@ angular.module('ComprasApp', [])
 
       $http.get('/api/compras', { params: params })
         .then(function(res) {
+          console.log('Compras obtenidas:', res.data);
           $scope.compras = res.data;
           if (!res.data.length) {
             $scope.mensaje = 'No se encontraron compras.';
@@ -249,6 +261,7 @@ angular.module('ComprasApp', [])
         id: compra._id,
         nombreComprador: compra.nombreComprador,
         direccionEnvio: compra.direccionEnvio
+        // fechaEnvio: formatearFechaInput(compra.fechaEnvio)
       };
     };
 
@@ -264,6 +277,7 @@ angular.module('ComprasApp', [])
         userId: getUserId(),
         nombreComprador: $scope.edicionCompra.nombreComprador,
         direccionEnvio: $scope.edicionCompra.direccionEnvio
+        // fechaEnvio: $scope.edicionCompra.fechaEnvio
       };
 
       $http.put('/api/compras/' + $scope.edicionCompra.id, payload)
@@ -293,7 +307,12 @@ angular.module('ComprasApp', [])
           $scope.mensaje = res.data.mensaje;
           if ($scope.selectedCompraId === id) {
             $scope.selectedCompraId = null;
-            $scope.edicionCompra = { id: '', nombreComprador: '', direccionEnvio: '' };
+            $scope.edicionCompra = {
+              id: '',
+              nombreComprador: '',
+              direccionEnvio: ''
+              // fechaEnvio: ''
+            };
           }
           $scope.buscarArticulos();
           $scope.buscarCompras();
