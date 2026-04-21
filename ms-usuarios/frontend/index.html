@@ -43,14 +43,6 @@
         </div>
         <div class="panel-body">
           <form name="crearForm" ng-submit="$event.preventDefault()">
-            <div class="form-group">
-              <label>Nombre</label>
-              <input type="text"
-                     class="form-control"
-                     placeholder="Nombre del usuario"
-                     ng-model="nuevoUsuario.nombre"
-                     required>
-            </div>
 
             <div class="form-group">
               <label>Rol</label>
@@ -87,48 +79,12 @@
                    ng-model="baja.idObjetivo">
           </div>
 
-          <div class="form-group">
-            <label>ID del usuario que realiza la petición</label>
-            <input type="text"
-                   class="form-control"
-                   placeholder="Tu ID"
-                   ng-model="baja.solicitanteId">
-          </div>
-
           <button type="button"
                   class="btn btn-danger"
                   ng-click="eliminarUsuario()"
-                  ng-disabled="!baja.idObjetivo || !baja.solicitanteId">
+                  ng-disabled="!baja.idObjetivo">
             Dar de baja
           </button>
-        </div>
-      </div>
-
-      <div class="panel panel-default panel-space">
-        <div class="panel-heading">
-          <h3 class="panel-title">Consulta de rol</h3>
-        </div>
-        <div class="panel-body">
-
-          <div class="form-group">
-            <label>ID del usuario</label>
-            <input type="text"
-                   class="form-control"
-                   placeholder="ID del usuario"
-                   ng-model="consultaRol.id">
-          </div>
-
-          <button type="button"
-                  class="btn btn-info"
-                  ng-click="consultarRol()"
-                  ng-disabled="!consultaRol.id">
-            Consultar rol
-          </button>
-
-          <div class="well" ng-if="resultadoRol">
-            <strong>ID:</strong> {{ resultadoRol._id }}<br>
-            <strong>Rol:</strong> {{ resultadoRol.rol }}
-          </div>
         </div>
       </div>
     </div>
@@ -185,7 +141,6 @@
             <table class="table table-striped table-bordered" ng-if="usuarios.length">
               <tr class="info">
                 <th>ID</th>
-                <th>Nombre</th>
                 <th>Rol</th>
                 <th>Creado</th>
               </tr>
@@ -195,7 +150,6 @@
                   ng-class="{'selected-row': u._id === selectedId}"
                   style="cursor:pointer">
                 <td>{{ u._id }}</td>
-                <td>{{ u.nombre }}</td>
                 <td>{{ u.rol }}</td>
                 <td>{{ u.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
               </tr>
@@ -214,7 +168,6 @@
         </div>
         <div class="panel-body">
           <p><strong>ID:</strong> {{ usuarioSeleccionado._id }}</p>
-          <p><strong>Nombre:</strong> {{ usuarioSeleccionado.nombre }}</p>
           <p><strong>Rol:</strong> {{ usuarioSeleccionado.rol }}</p>
           <p><strong>Creado:</strong> {{ usuarioSeleccionado.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>

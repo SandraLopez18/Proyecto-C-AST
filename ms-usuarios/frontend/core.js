@@ -2,17 +2,11 @@ angular.module('UsuariosApp', [])
   .controller('usuariosController', function($scope, $http) {
 
     $scope.nuevoUsuario = {
-      nombre: '',
       rol: ''
     };
 
     $scope.baja = {
       idObjetivo: '',
-      solicitanteId: ''
-    };
-
-    $scope.consultaRol = {
-      id: ''
     };
 
     $scope.filtro = {
@@ -23,7 +17,6 @@ angular.module('UsuariosApp', [])
     $scope.usuarios = [];
     $scope.usuarioSeleccionado = null;
     $scope.selectedId = null;
-    $scope.resultadoRol = null;
 
     $scope.mensaje = '';
     $scope.error = '';
@@ -38,7 +31,10 @@ angular.module('UsuariosApp', [])
     }
 
     function mostrarError(err, mensajePorDefecto) {
-      if (err && err.data && err.data.error) {
+      if(err && err.status === 403) {
+        $scope.error = 'No tienes permisos para realizar esta acción.';
+        return;
+      }else if (err && err.data && err.data.error) {
         $scope.error = err.data.error;
       } else {
         $scope.error = mensajePorDefecto || 'Ha ocurrido un error en la operación.';
@@ -47,17 +43,15 @@ angular.module('UsuariosApp', [])
 
     $scope.crearUsuario = function() {
       limpiarMensajes();
-      $scope.resultadoRol = null;
 
       const data = {
-        nombre: $scope.nuevoUsuario.nombre,
         rol: $scope.nuevoUsuario.rol
       };
 
       $http.post('/api/usuarios', data, jsonConfig)
         .then(function(res) {
           $scope.mensaje = 'Usuario creado correctamente. ID: ' + res.data._id;
-          $scope.nuevoUsuario = { nombre: '', rol: '' };
+          $scope.nuevoUsuario = { rol: '' };
 
           if ($scope.filtro.adminId) {
             $scope.consultarUsuarios();
@@ -69,68 +63,30 @@ angular.module('UsuariosApp', [])
     };
 
     $scope.eliminarUsuario = function() {
+      console.log('CLICK en eliminarUsuario');
       limpiarMensajes();
-      $scope.resultadoRol = null;
 
       const idObjetivo = ($scope.baja.idObjetivo || '').trim();
-      const solicitanteId = ($scope.baja.solicitanteId || '').trim();
-
-      if (!idObjetivo || !solicitanteId) {
-        $scope.error = 'Debes indicar el ID a eliminar y el ID del solicitante.';
+      console.log('ID objetivo a eliminar:', idObjetivo);
+      
+      if (!idObjetivo) {
+        $scope.error = 'Debes indicar el ID del usuario a eliminar.';
         return;
       }
 
-      $http.delete('/api/usuarios/' + idObjetivo, {
-        params: { userId: solicitanteId }
-      })
+      $http.delete('/api/usuarios/' + idObjetivo)
         .then(function(res) {
+          console.log('DELETE OK', res);
           $scope.mensaje = res.data.mensaje || 'Usuario eliminado correctamente.';
-
-          if ($scope.usuarioSeleccionado && $scope.usuarioSeleccionado._id === idObjetivo) {
-            $scope.usuarioSeleccionado = null;
-            $scope.selectedId = null;
-          }
-
-          $scope.baja = {
-            idObjetivo: '',
-            solicitanteId: ''
-          };
-
-          if ($scope.filtro.adminId) {
-            $scope.consultarUsuarios();
-          } else {
-            $scope.usuarios = [];
-          }
+          $scope.baja = { idObjetivo: ''};
         })
         .catch(function(err) {
           mostrarError(err, 'Error al eliminar usuario.');
         });
     };
 
-    $scope.consultarRol = function() {
-      limpiarMensajes();
-
-      const id = ($scope.consultaRol.id || '').trim();
-
-      if (!id) {
-        $scope.error = 'Debes indicar un ID de usuario.';
-        return;
-      }
-
-      $http.get('/api/usuarios/' + id + '/rol')
-        .then(function(res) {
-          $scope.resultadoRol = res.data;
-          $scope.mensaje = 'Rol consultado correctamente.';
-        })
-        .catch(function(err) {
-          $scope.resultadoRol = null;
-          mostrarError(err, 'Error al consultar el rol.');
-        });
-    };
-
     $scope.consultarUsuarios = function() {
       limpiarMensajes();
-      $scope.resultadoRol = null;
 
       const adminId = ($scope.filtro.adminId || '').trim();
 
@@ -176,7 +132,6 @@ angular.module('UsuariosApp', [])
       $scope.usuarios = [];
       $scope.usuarioSeleccionado = null;
       $scope.selectedId = null;
-      $scope.resultadoRol = null;
     };
 
     $scope.seleccionarUsuario = function(usuario) {

@@ -1,15 +1,16 @@
+const { default: mongoose } = require('mongoose');
 const Usuario = require('./modelo/usuario');
 
 // Crear usuario
 exports.createUsuario = async (req, res) => {
   try {
-    const { nombre, rol } = req.body;
+    const { rol } = req.body;
 
-    if (!nombre || !rol) {
-      return res.status(400).json({ error: 'Nombre y rol son obligatorios.' });
+    if (!rol) {
+      return res.status(400).json({ error: 'Rol es obligatorio.' });
     }
 
-    const usuario = await Usuario.create({ nombre, rol });
+    const usuario = await Usuario.create({ rol });
     res.status(201).json(usuario);
   } catch (error) {
     res.status(500).json({ error: 'Error al crear usuario.' });
@@ -54,7 +55,13 @@ exports.getRolUsuario = async (req, res) => {
 // Eliminar usuario
 exports.deleteUsuario = async (req, res) => {
   try {
-    const usuario = await Usuario.findByIdAndDelete(req.params.id);
+    const id = req.params.id;
+
+    if(!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'ID de usuario no válido.' });
+    }
+
+    const usuario = await Usuario.findByIdAndDelete(id);
 
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado.' });
